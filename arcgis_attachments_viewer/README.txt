@@ -1,8 +1,16 @@
-# Visor Adjuntos ArcGIS REST
+ArcGIS REST Attachments Viewer
 
-Versión 1.0.0
+Version 1.0.0
 
-Cambios:
-- Procesa una o varias entidades seleccionadas.
-- Genera una galería HTML agrupada por OBJECTID.
-- Detecta automáticamente la URL REST FeatureServer/N desde la fuente de la capa activa.
+A QGIS plugin to view ArcGIS REST FeatureServer attachments from selected features.
+
+Features:
+- Detects ArcGIS REST FeatureServer layer URLs.
+- Reads one or multiple selected features.
+- Queries attachments by OBJECTID.
+- Opens an HTML gallery with photos and files.
+
+Limitations:
+- The layer must expose attachments.
+- Private services may require a valid ArcGIS session or token.
+- The plugin does not store usernames, passwords or tokens.
