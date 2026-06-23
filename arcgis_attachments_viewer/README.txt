@@ -1,6 +1,6 @@
 # Visor Adjuntos ArcGIS REST
 
-Versión 1.1.0
+Versión 1.0.0
 
 Cambios:
 - Procesa una o varias entidades seleccionadas.
