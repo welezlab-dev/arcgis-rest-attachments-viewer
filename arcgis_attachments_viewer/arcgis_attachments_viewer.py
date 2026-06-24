@@ -11,7 +11,7 @@ Uso:
 
 Limitación:
 - Funciona mejor con capas públicas o URLs REST que incluyan token.
-- Para capas privadas con autenticación administrada por QGIS, el acceso directo por urllib puede requerir token.
+- Para capas privadas con autenticación administrada por QGIS, puede requerirse token explícito.
 """
 
 import html
@@ -21,13 +21,13 @@ import re
 import tempfile
 import traceback
 from urllib.parse import quote, urlencode, urlparse
-from urllib.request import Request, urlopen
 
-from qgis.PyQt.QtCore import QUrl
+from qgis.PyQt.QtCore import QEventLoop, QTimer, QUrl
 from qgis.PyQt.QtGui import QDesktopServices, QIcon
+from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
 from qgis.PyQt.QtWidgets import QAction
 
-from qgis.core import Qgis, QgsMessageLog, QgsVectorLayer
+from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager, QgsVectorLayer
 
 
 class ArcGisAttachmentsViewer:
@@ -291,17 +291,38 @@ class ArcGisAttachmentsViewer:
 
     def fetch_json(self, url):
         self.validate_rest_url(url)
-        request = Request(
-            url,
-            headers={
-                "User-Agent": "QGIS ArcGIS Attachments Viewer",
-                "Accept": "application/json,text/plain,*/*",
-            },
-        )
 
-        # nosec B310: URL is restricted to validated HTTP(S) ArcGIS REST FeatureServer endpoints.
-        with urlopen(request, timeout=30) as response:
-            raw = response.read().decode("utf-8", errors="replace")
+        request = QNetworkRequest(QUrl(url))
+        request.setRawHeader(b"User-Agent", b"QGIS ArcGIS Attachments Viewer")
+        request.setRawHeader(b"Accept", b"application/json,text/plain,*/*")
+
+        manager = QgsNetworkAccessManager.instance()
+        reply = manager.get(request)
+
+        loop = QEventLoop()
+        timer = QTimer()
+        timer.setSingleShot(True)
+
+        reply.finished.connect(loop.quit)
+        timer.timeout.connect(loop.quit)
+        timer.start(30000)
+        loop.exec_()
+
+        if timer.isActive():
+            timer.stop()
+        else:
+            reply.abort()
+            reply.deleteLater()
+            raise Exception("La consulta REST tardó demasiado tiempo y fue cancelada.")
+
+        try:
+            if reply.error() != QNetworkReply.NoError:
+                message = reply.errorString() or "Error de red desconocido"
+                raise Exception(message)
+
+            raw = bytes(reply.readAll()).decode("utf-8", errors="replace")
+        finally:
+            reply.deleteLater()
 
         try:
             data = json.loads(raw)
