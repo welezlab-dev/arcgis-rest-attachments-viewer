@@ -14,3 +14,9 @@
 - Restricted REST requests to validated HTTP(S) ArcGIS FeatureServer layer URLs.
 - Added URL validation before opening attachment endpoints.
 - Addressed Bandit security scan warning for URL opening.
+
+## 1.0.2
+
+- Replaced urllib URL opening with QGIS network manager.
+- Removed urllib.request.urlopen to address QGIS plugin security scan.
+- Kept REST URL validation for HTTP(S) ArcGIS FeatureServer endpoints.
