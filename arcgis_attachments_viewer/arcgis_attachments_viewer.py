@@ -20,7 +20,7 @@ import os
 import re
 import tempfile
 import traceback
-from urllib.parse import quote, urlencode
+from urllib.parse import quote, urlencode, urlparse
 from urllib.request import Request, urlopen
 
 from qgis.PyQt.QtCore import QUrl
@@ -268,12 +268,29 @@ class ArcGisAttachmentsViewer:
     # Consulta REST
     # -------------------------
     def build_url(self, base_url, path, params=None):
-        url = f"{base_url.rstrip('/')}/{path.lstrip('/')}"
+        self.validate_rest_url(base_url)
+        safe_path = path.lstrip('/')
+        url = f"{base_url.rstrip('/')}/{safe_path}"
         if params:
             url += "?" + urlencode(params)
+        self.validate_rest_url(url)
         return url
 
+    def validate_rest_url(self, url):
+        """Allow only HTTP(S) ArcGIS REST FeatureServer attachment URLs."""
+        parsed = urlparse(str(url))
+        if parsed.scheme not in ("http", "https"):
+            raise ValueError("Solo se permiten URLs HTTP o HTTPS.")
+        if not parsed.netloc:
+            raise ValueError("La URL REST no tiene un dominio válido.")
+        if not re.search(r"/FeatureServer/\d+(?:/|$)", parsed.path, flags=re.IGNORECASE):
+            raise ValueError("La URL no corresponde a una subcapa ArcGIS FeatureServer válida.")
+        if parsed.username or parsed.password:
+            raise ValueError("No se permiten credenciales embebidas en la URL.")
+        return True
+
     def fetch_json(self, url):
+        self.validate_rest_url(url)
         request = Request(
             url,
             headers={
@@ -282,6 +299,7 @@ class ArcGisAttachmentsViewer:
             },
         )
 
+        # nosec B310: URL is restricted to validated HTTP(S) ArcGIS REST FeatureServer endpoints.
         with urlopen(request, timeout=30) as response:
             raw = response.read().decode("utf-8", errors="replace")
 
