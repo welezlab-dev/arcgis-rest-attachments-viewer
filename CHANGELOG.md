@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.3
+
+- Marked the plugin as stable.
+- Changed experimental metadata flag from True to False.
+
+## 1.0.2
+
+- Replaced urllib URL opening with QGIS network manager.
+- Removed urllib.request.urlopen to address QGIS plugin security scan.
+- Kept REST URL validation for HTTP(S) ArcGIS FeatureServer endpoints.
+
+## 1.0.1
+
+- Restricted REST requests to validated HTTP(S) ArcGIS FeatureServer layer URLs.
+- Added URL validation before opening attachment endpoints.
+- Addressed Bandit security scan warning for URL opening.
+
 ## 1.0.0
 
 - Initial experimental release.
@@ -8,15 +25,3 @@
 - Queries attachments by OBJECTID.
 - Opens an HTML gallery.
 - Supports one or multiple selected features.
-
-## 1.0.1
-
-- Restricted REST requests to validated HTTP(S) ArcGIS FeatureServer layer URLs.
-- Added URL validation before opening attachment endpoints.
-- Addressed Bandit security scan warning for URL opening.
-
-## 1.0.2
-
-- Replaced urllib URL opening with QGIS network manager.
-- Removed urllib.request.urlopen to address QGIS plugin security scan.
-- Kept REST URL validation for HTTP(S) ArcGIS FeatureServer endpoints.
