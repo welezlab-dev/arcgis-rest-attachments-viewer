@@ -263,14 +263,13 @@ class ArcGisAttachmentsViewer:
                 return lower_to_real[key]
 
         # Si QGIS conoce la PK, úsala como último recurso.
-        try:
-            pk_indexes = layer.dataProvider().pkAttributeIndexes()
+        provider = layer.dataProvider()
+        if provider is not None:
+            pk_indexes = provider.pkAttributeIndexes()
             if pk_indexes:
                 idx = pk_indexes[0]
                 if 0 <= idx < len(field_names):
                     return field_names[idx]
-        except Exception:
-            pass
 
         return None
 
