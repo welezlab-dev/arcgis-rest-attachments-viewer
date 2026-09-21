@@ -1,9 +1,10 @@
 [general]
 name=ArcGIS REST Attachments Viewer
 qgisMinimumVersion=3.22
+qgisMaximumVersion=4.99
 description=View ArcGIS REST FeatureServer attachments directly from QGIS.
 about=This plugin detects ArcGIS REST FeatureServer layers, reads one or multiple selected features, queries their attachments by OBJECTID, and opens an HTML gallery with photos and files. Public services work directly. Private services may require a valid ArcGIS session or token.
-version=1.0.3
+version=1.0.4
 author=Jhon Vélez
 email=welezlab@gmail.com
 icon=icon.svg
@@ -15,4 +16,4 @@ tracker=https://github.com/welezlab-dev/arcgis-rest-attachments-viewer/issues
 license=GPL-2.0-or-later
 experimental=False
 deprecated=False
-changelog=1.0.1 - Restrict URL handling to validated HTTP(S) ArcGIS FeatureServer endpoints. 1.0.0 - Initial experimental release.
+changelog=1.0.4 - Added compatibility with QGIS 4 and Qt 6 while retaining QGIS 3.22 support. Updated Qt enums, QAction import, event loop execution, network error handling, and the icon with an opaque white attachment glyph. Removed silent broad exception handling flagged by Bandit security analysis. 1.0.3 - Marked the plugin as stable. 1.0.2 - Replaced urllib URL opening with QGIS network manager. 1.0.1 - Restricted URL handling to validated HTTP(S) ArcGIS FeatureServer endpoints. 1.0.0 - Initial experimental release.
