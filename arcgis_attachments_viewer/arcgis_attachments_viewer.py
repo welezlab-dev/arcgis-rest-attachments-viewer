@@ -25,7 +25,13 @@ from urllib.parse import quote, urlencode, urlparse
 from qgis.PyQt.QtCore import QEventLoop, QTimer, QUrl
 from qgis.PyQt.QtGui import QDesktopServices, QIcon
 from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
-from qgis.PyQt.QtWidgets import QAction
+
+try:
+    # QAction belongs to QtGui in Qt 6 (QGIS 4).
+    from qgis.PyQt.QtGui import QAction
+except ImportError:
+    # QAction belongs to QtWidgets in Qt 5 (QGIS 3).
+    from qgis.PyQt.QtWidgets import QAction
 
 from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager, QgsVectorLayer
 
@@ -61,7 +67,7 @@ class ArcGisAttachmentsViewer:
         self.iface.messageBar().pushMessage(
             "Adjuntos ArcGIS REST",
             message,
-            level=Qgis.Info,
+            level=Qgis.MessageLevel.Info,
             duration=duration,
         )
 
@@ -69,7 +75,7 @@ class ArcGisAttachmentsViewer:
         self.iface.messageBar().pushMessage(
             "Adjuntos ArcGIS REST",
             message,
-            level=Qgis.Warning,
+            level=Qgis.MessageLevel.Warning,
             duration=duration,
         )
 
@@ -77,12 +83,16 @@ class ArcGisAttachmentsViewer:
         self.iface.messageBar().pushMessage(
             "Adjuntos ArcGIS REST",
             message,
-            level=Qgis.Critical,
+            level=Qgis.MessageLevel.Critical,
             duration=duration,
         )
 
     def log_error(self, message):
-        QgsMessageLog.logMessage(message, "Adjuntos ArcGIS REST", Qgis.Critical)
+        QgsMessageLog.logMessage(
+            message,
+            "Adjuntos ArcGIS REST",
+            Qgis.MessageLevel.Critical,
+        )
 
     # -------------------------
     # Acción principal
@@ -306,7 +316,10 @@ class ArcGisAttachmentsViewer:
         reply.finished.connect(loop.quit)
         timer.timeout.connect(loop.quit)
         timer.start(30000)
-        loop.exec_()
+        event_loop_runner = getattr(loop, "exec", None)
+        if event_loop_runner is None:
+            event_loop_runner = getattr(loop, "exec_")
+        event_loop_runner()
 
         if timer.isActive():
             timer.stop()
@@ -316,7 +329,10 @@ class ArcGisAttachmentsViewer:
             raise Exception("La consulta REST tardó demasiado tiempo y fue cancelada.")
 
         try:
-            if reply.error() != QNetworkReply.NoError:
+            network_error_enum = getattr(QNetworkReply, "NetworkError", QNetworkReply)
+            no_error = getattr(network_error_enum, "NoError")
+
+            if reply.error() != no_error:
                 message = reply.errorString() or "Error de red desconocido"
                 raise Exception(message)
 
